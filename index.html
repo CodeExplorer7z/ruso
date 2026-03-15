@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Ruso: Géneros App (10)</title>
+    <title>Ruso: Géneros App (30)</title>
     <style>
         :root { --p: #3498db; --s: #2ecc71; --d: #e74c3c; --bg: #f4f7f6; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
@@ -21,18 +20,30 @@
         .correct { background: var(--s) !important; color: white; border-color: var(--s); }
         .wrong { background: var(--d) !important; color: white; border-color: var(--d); }
         .mark { font-size: 1.5rem; font-weight: bold; }
+        
+        /* Estilo para el botón siguiente */
+        #next-btn { 
+            width: 100%; margin-top: 20px; padding: 15px; background: #2c3e50; 
+            color: white; border: none; border-radius: 10px; font-size: 1rem;
+            display: none; /* Se oculta hasta que respondan algo */
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>Уроки русского</h1>
+    <h1 id="page-title">Уроки русского</h1>
     <p class="instr">Elige el género según la letra <span style="color:red">roja</span></p>
+    
     <div id="quiz"></div>
+    
+    <button id="next-btn" onclick="nextPage()">SIGUIENTE PÁGINA</button>
 </div>
 
 <script>
-    const vocab = [
+    // Todo el vocabulario (30 palabras)
+    const allVocab = [
+        // Página 1
         {w:"Сто<span class='red'>л</span>", i:"🪑", g:"m", t:"Mesa"},
         {w:"Школ<span class='red'>а</span>", i:"🏫", g:"f", t:"Escuela"},
         {w:"Окн<span class='red'>о</span>", i:"🪟", g:"n", t:"Ventana"},
@@ -42,24 +53,77 @@
         {w:"Бра<span class='red'>т</span>", i:"👦", g:"m", t:"Hermano"},
         {w:"Сестр<span class='red'>а</span>", i:"👧", g:"f", t:"Hermana"},
         {w:"Море<span class='red'>е</span>", i:"🌊", g:"n", t:"Mar"},
-        {w:"Пап<span class='red'>а</span>", i:"👨", g:"m", t:"Papá"}
+        {w:"Пап<span class='red'>а</span>", i:"👨", g:"m", t:"Papá"},
+        
+        // Página 2
+        {w:"До<span class='red'>м</span>", i:"🏠", g:"m", t:"Casa"},
+        {w:"Машин<span class='red'>а</span>", i:"🚗", g:"f", t:"Coche"},
+        {w:"Плать<span class='red'>е</span>", i:"👗", g:"n", t:"Vestido"},
+        {w:"Ко<span class='red'>т</span>", i:"🐈", g:"m", t:"Gato"},
+        {w:"Собак<span class='red'>а</span>", i:"🐕", g:"f", t:"Perro"},
+        {w:"Яблок<span class='red'>о</span>", i:"🍎", g:"n", t:"Manzana"},
+        {w:"Горо<span class='red'>д</span>", i:"🏙️", g:"m", t:"Ciudad"},
+        {w:"Ручк<span class='red'>а</span>", i:"🖊️", g:"f", t:"Bolígrafo"},
+        {w:"Здани<span class='red'>е</span>", i:"🏢", g:"n", t:"Edificio"},
+        {w:"Телефо<span class='red'>н</span>", i:"📱", g:"m", t:"Teléfono"},
+        
+        // Página 3
+        {w:"Учител<span class='red'>ь</span>", i:"👨‍🏫", g:"m", t:"Profesor"},
+        {w:"Газет<span class='red'>а</span>", i:"📰", g:"f", t:"Periódico"},
+        {w:"Поле<span class='red'>е</span>", i:"🌱", g:"n", t:"Campo"},
+        {w:"Журна<span class='red'>л</span>", i:"📓", g:"m", t:"Revista"},
+        {w:"Семь<span class='red'>я</span>", i:"👨‍👩‍👧", g:"f", t:"Familia"},
+        {w:"Солнц<span class='red'>е</span>", i:"☀️", g:"n", t:"Sol"},
+        {w:"Хле<span class='red'>б</span>", i:"🍞", g:"m", t:"Pan"},
+        {w:"Вод<span class='red'>а</span>", i:"💧", g:"f", t:"Agua"},
+        {w:"Лиц<span class='red'>о</span>", i:"👤", g:"n", t:"Cara"},
+        {w:"Мужчин<span class='red'>а</span>", i:"🧔", g:"m", t:"Hombre"}
     ];
 
-    const container = document.getElementById('quiz');
-    vocab.forEach((item, i) => {
-        container.innerHTML += `
-            <div class="item">
-                <div class="item-head">
-                    <div class="word">${item.i || ''} ${item.w} <span class="trans">(${item.t})</span></div>
-                    <span id="m${i}" class="mark"></span>
-                </div>
-                <div class="btns" id="b${i}">
-                    <button onclick="val(${i},'m','${item.g}')">MASC</button>
-                    <button onclick="val(${i},'f','${item.g}')">FEM</button>
-                    <button onclick="val(${i},'n','${item.g}')">NEUT</button>
-                </div>
-            </div>`;
-    });
+    let currentPage = 0;
+    const itemsPerPage = 10;
+
+    function renderPage() {
+        const container = document.getElementById('quiz');
+        const nextBtn = document.getElementById('next-btn');
+        const title = document.getElementById('page-title');
+        
+        container.innerHTML = ''; // Limpiar página
+        window.scrollTo(0,0); // Volver arriba
+        
+        title.innerText = `Lección Rusa - Parte ${currentPage + 1}`;
+
+        // Obtener solo 10 elementos según la página actual
+        const start = currentPage * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageItems = allVocab.slice(start, end);
+
+        pageItems.forEach((item, i) => {
+            const globalIdx = start + i; // Índice global para el ID
+            container.innerHTML += `
+                <div class="item">
+                    <div class="item-head">
+                        <div class="word">${item.i || ''} ${item.w} <span class="trans">(${item.t})</span></div>
+                        <span id="m${globalIdx}" class="mark"></span>
+                    </div>
+                    <div class="btns" id="b${globalIdx}">
+                        <button onclick="val(${globalIdx},'m','${item.g}')">MASC</button>
+                        <button onclick="val(${globalIdx},'f','${item.g}')">FEM</button>
+                        <button onclick="val(${globalIdx},'n','${item.g}')">NEUT</button>
+                    </div>
+                </div>`;
+        });
+
+        // Mostrar u ocultar botón de siguiente
+        if (currentPage < 2) {
+            nextBtn.style.display = 'block';
+            nextBtn.innerText = "SIGUIENTE PÁGINA";
+        } else {
+            nextBtn.style.display = 'block';
+            nextBtn.innerText = "¡TERMINAR REPASO!";
+            nextBtn.onclick = () => alert("¡Felicidades! Completaste las 3 páginas.");
+        }
+    }
 
     function val(idx, sel, corr) {
         const mark = document.getElementById('m'+idx);
@@ -71,6 +135,17 @@
         });
         mark.innerHTML = (sel === corr) ? "<span style='color:var(--s)'>✓</span>" : "<span style='color:var(--d)'>✕</span>";
     }
+
+    function nextPage() {
+        if (currentPage < 2) {
+            currentPage++;
+            renderPage();
+        }
+    }
+
+    // Inicializar la primera página
+    renderPage();
 </script>
+
 </body>
 </html>
