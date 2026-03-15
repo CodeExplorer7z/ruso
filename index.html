@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ruso: Géneros App (30)</title>
+    <title>Ruso: Géneros con Audio</title>
     <style>
         :root { --p: #3498db; --s: #2ecc71; --d: #e74c3c; --bg: #f4f7f6; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; }
@@ -12,28 +12,25 @@
         .instr { font-size: 0.85rem; color: #666; text-align: center; margin-bottom: 20px; }
         .item { border-bottom: 1px solid #eee; padding: 15px 0; }
         .item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .word-box { display: flex; align-items: center; gap: 10px; }
         .word { font-size: 1.2rem; font-weight: bold; }
         .red { color: var(--d); text-decoration: underline; }
         .trans { font-weight: normal; font-size: 0.8rem; color: #888; display: block; }
+        .btn-audio { background: #eee; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-audio:active { background: var(--p); color: white; }
         .btns { display: flex; gap: 8px; }
-        button { flex: 1; padding: 10px 2px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+        button.choice { flex: 1; padding: 10px 2px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; }
         .correct { background: var(--s) !important; color: white; border-color: var(--s); }
         .wrong { background: var(--d) !important; color: white; border-color: var(--d); }
         .mark { font-size: 1.5rem; font-weight: bold; }
-        
-        /* Estilo para el botón siguiente */
-        #next-btn { 
-            width: 100%; margin-top: 20px; padding: 15px; background: #2c3e50; 
-            color: white; border: none; border-radius: 10px; font-size: 1rem;
-            display: none; /* Se oculta hasta que respondan algo */
-        }
+        #next-btn { width: 100%; margin-top: 20px; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h1 id="page-title">Уроки русского</h1>
-    <p class="instr">Elige el género según la letra <span style="color:red">roja</span></p>
+    <p class="instr">Escucha y elige el género (m, f, n)</p>
     
     <div id="quiz"></div>
     
@@ -41,87 +38,90 @@
 </div>
 
 <script>
-    // Todo el vocabulario (30 palabras)
     const allVocab = [
-        // Página 1
-        {w:"Сто<span class='red'>л</span>", i:"🪑", g:"m", t:"Mesa"},
-        {w:"Школ<span class='red'>а</span>", i:"🏫", g:"f", t:"Escuela"},
-        {w:"Окн<span class='red'>о</span>", i:"🪟", g:"n", t:"Ventana"},
-        {w:"Дру<span class='red'>г</span>", i:"👤", g:"m", t:"Amigo"},
-        {w:"Книг<span class='red'>а</span>", i:"📖", g:"f", t:"Libro"},
-        {w:"Молок<span class='red'>о</span>", i:"🥛", g:"n", t:"Leche"},
-        {w:"Бра<span class='red'>т</span>", i:"👦", g:"m", t:"Hermano"},
-        {w:"Сестр<span class='red'>а</span>", i:"👧", g:"f", t:"Hermana"},
-        {w:"Море<span class='red'>е</span>", i:"🌊", g:"n", t:"Mar"},
-        {w:"Пап<span class='red'>а</span>", i:"👨", g:"m", t:"Papá"},
-        
-        // Página 2
-        {w:"До<span class='red'>м</span>", i:"🏠", g:"m", t:"Casa"},
-        {w:"Машин<span class='red'>а</span>", i:"🚗", g:"f", t:"Coche"},
-        {w:"Плать<span class='red'>е</span>", i:"👗", g:"n", t:"Vestido"},
-        {w:"Ко<span class='red'>т</span>", i:"🐈", g:"m", t:"Gato"},
-        {w:"Собак<span class='red'>а</span>", i:"🐕", g:"f", t:"Perro"},
-        {w:"Яблок<span class='red'>о</span>", i:"🍎", g:"n", t:"Manzana"},
-        {w:"Горо<span class='red'>д</span>", i:"🏙️", g:"m", t:"Ciudad"},
-        {w:"Ручк<span class='red'>а</span>", i:"🖊️", g:"f", t:"Bolígrafo"},
-        {w:"Здани<span class='red'>е</span>", i:"🏢", g:"n", t:"Edificio"},
-        {w:"Телефо<span class='red'>н</span>", i:"📱", g:"m", t:"Teléfono"},
-        
-        // Página 3
-        {w:"Учител<span class='red'>ь</span>", i:"👨‍🏫", g:"m", t:"Profesor"},
-        {w:"Газет<span class='red'>а</span>", i:"📰", g:"f", t:"Periódico"},
-        {w:"Поле<span class='red'>е</span>", i:"🌱", g:"n", t:"Campo"},
-        {w:"Журна<span class='red'>л</span>", i:"📓", g:"m", t:"Revista"},
-        {w:"Семь<span class='red'>я</span>", i:"👨‍👩‍👧", g:"f", t:"Familia"},
-        {w:"Солнц<span class='red'>е</span>", i:"☀️", g:"n", t:"Sol"},
-        {w:"Хле<span class='red'>б</span>", i:"🍞", g:"m", t:"Pan"},
-        {w:"Вод<span class='red'>а</span>", i:"💧", g:"f", t:"Agua"},
-        {w:"Лиц<span class='red'>о</span>", i:"👤", g:"n", t:"Cara"},
-        {w:"Мужчин<span class='red'>а</span>", i:"🧔", g:"m", t:"Hombre"}
+        {w:"Стол", i:"🪑", g:"m", t:"Mesa", r:"л"},
+        {w:"Школа", i:"🏫", g:"f", t:"Escuela", r:"а"},
+        {w:"Окно", i:"🪟", g:"n", t:"Ventana", r:"о"},
+        {w:"Друг", i:"👤", g:"m", t:"Amigo", r:"г"},
+        {w:"Книга", i:"📖", g:"f", t:"Libro", r:"а"},
+        {w:"Молоко", i:"🥛", g:"n", t:"Leche", r:"о"},
+        {w:"Брат", i:"👦", g:"m", t:"Hermano", r:"т"},
+        {w:"Сестра", i:"👧", g:"f", t:"Hermana", r:"а"},
+        {w:"Море", i:"🌊", g:"n", t:"Mar", r:"е"},
+        {w:"Папа", i:"👨", g:"m", t:"Papá", r:"а"},
+        {w:"Дом", i:"🏠", g:"m", t:"Casa", r:"м"},
+        {w:"Машина", i:"🚗", g:"f", t:"Coche", r:"а"},
+        {w:"Платье", i:"👗", g:"n", t:"Vestido", r:"е"},
+        {w:"Кот", i:"🐈", g:"m", t:"Gato", r:"т"},
+        {w:"Собака", i:"🐕", g:"f", t:"Perro", r:"а"},
+        {w:"Яблоко", i:"🍎", g:"n", t:"Manzana", r:"о"},
+        {w:"Город", i:"🏙️", g:"m", t:"Ciudad", r:"д"},
+        {w:"Ручка", i:"🖊️", g:"f", t:"Bolígrafo", r:"а"},
+        {w:"Здание", i:"🏢", g:"n", t:"Edificio", r:"е"},
+        {w:"Телефон", i:"📱", g:"m", t:"Teléfono", r:"н"},
+        {w:"Учитель", i:"👨‍🏫", g:"m", t:"Profesor", r:"ь"},
+        {w:"Газета", i:"📰", g:"f", t:"Periódico", r:"а"},
+        {w:"Поле", i:"🌱", g:"n", t:"Campo", r:"е"},
+        {w:"Журнал", i:"📓", g:"m", t:"Revista", r:"л"},
+        {w:"Семья", i:"👨‍👩‍👧", g:"f", t:"Familia", r:"я"},
+        {w:"Солнце", i:"☀️", g:"n", t:"Sol", r:"е"},
+        {w:"Хлеб", i:"🍞", g:"m", t:"Pan", r:"б"},
+        {w:"Вода", i:"💧", g:"f", t:"Agua", r:"а"},
+        {w:"Лицо", i:"👤", g:"n", t:"Cara", r:"о"},
+        {w:"Мужчина", i:"🧔", g:"m", t:"Hombre", r:"а"}
     ];
 
     let currentPage = 0;
     const itemsPerPage = 10;
+
+    // Función para hablar en Ruso
+    function speak(text) {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = text;
+        msg.lang = 'ru-RU';
+        msg.rate = 0.8; // Un poco más lento para principiantes
+        window.speechSynthesis.speak(msg);
+    }
 
     function renderPage() {
         const container = document.getElementById('quiz');
         const nextBtn = document.getElementById('next-btn');
         const title = document.getElementById('page-title');
         
-        container.innerHTML = ''; // Limpiar página
-        window.scrollTo(0,0); // Volver arriba
+        container.innerHTML = '';
+        window.scrollTo(0,0);
         
         title.innerText = `Lección Rusa - Parte ${currentPage + 1}`;
-
-        // Obtener solo 10 elementos según la página actual
         const start = currentPage * itemsPerPage;
-        const end = start + itemsPerPage;
-        const pageItems = allVocab.slice(start, end);
+        const pageItems = allVocab.slice(start, start + itemsPerPage);
 
         pageItems.forEach((item, i) => {
-            const globalIdx = start + i; // Índice global para el ID
+            const globalIdx = start + i;
+            // Resaltar la última letra en rojo para la lógica visual
+            const displayedWord = item.w.replace(new RegExp(item.r + "$"), `<span class="red">${item.r}</span>`);
+            
             container.innerHTML += `
                 <div class="item">
                     <div class="item-head">
-                        <div class="word">${item.i || ''} ${item.w} <span class="trans">(${item.t})</span></div>
+                        <div class="word-box">
+                            <button class="btn-audio" onclick="speak('${item.w}')">🔊</button>
+                            <div class="word">${item.i} ${displayedWord} <span class="trans">(${item.t})</span></div>
+                        </div>
                         <span id="m${globalIdx}" class="mark"></span>
                     </div>
                     <div class="btns" id="b${globalIdx}">
-                        <button onclick="val(${globalIdx},'m','${item.g}')">MASC</button>
-                        <button onclick="val(${globalIdx},'f','${item.g}')">FEM</button>
-                        <button onclick="val(${globalIdx},'n','${item.g}')">NEUT</button>
+                        <button class="choice" onclick="val(${globalIdx},'m','${item.g}')">MASC</button>
+                        <button class="choice" onclick="val(${globalIdx},'f','${item.g}')">FEM</button>
+                        <button class="choice" onclick="val(${globalIdx},'n','${item.g}')">NEUT</button>
                     </div>
                 </div>`;
         });
 
-        // Mostrar u ocultar botón de siguiente
         if (currentPage < 2) {
-            nextBtn.style.display = 'block';
             nextBtn.innerText = "SIGUIENTE PÁGINA";
         } else {
-            nextBtn.style.display = 'block';
             nextBtn.innerText = "¡TERMINAR REPASO!";
-            nextBtn.onclick = () => alert("¡Felicidades! Completaste las 3 páginas.");
+            nextBtn.onclick = () => alert("¡Felicidades! Completaste el vocabulario.");
         }
     }
 
@@ -134,6 +134,8 @@
             if(b.innerText.toLowerCase().startsWith(sel) && sel !== corr) b.classList.add('wrong');
         });
         mark.innerHTML = (sel === corr) ? "<span style='color:var(--s)'>✓</span>" : "<span style='color:var(--d)'>✕</span>";
+        // Opcional: Hablar la palabra al responder
+        speak(allVocab[idx].w);
     }
 
     function nextPage() {
@@ -143,7 +145,6 @@
         }
     }
 
-    // Inicializar la primera página
     renderPage();
 </script>
 
