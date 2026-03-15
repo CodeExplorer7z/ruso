@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Feedback Instantáneo: Géneros Rusos</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --bg: #f8f9fa;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 10px; 
+            color: #333; 
+        }
+
+        .container { 
+            max-width: 100%; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+
+        h1 { 
+            color: #2c3e50; 
+            font-size: 1.4rem; 
+            text-align: center; 
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .instructions { 
+            background: #eef7fe; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-size: 0.9rem; 
+            margin-bottom: 20px; 
+            line-height: 1.4;
+        }
+
+        .item { 
+            padding: 15px 5px; 
+            border-bottom: 1px solid #eee; 
+            display: flex;
+            flex-direction: column; 
+            gap: 10px;
+            position: relative; /* Para el feedback */
+        }
+
+        .header-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Para que el feedback quede a la derecha */
+        }
+
+        .left-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .num { font-weight: bold; color: var(--primary); margin-right: 10px; width: 25px; }
+        
+        .icon { font-size: 28px; margin-right: 15px; width: 35px; text-align: center; }
+
+        .word-box { 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+        }
+
+        .red { color: var(--danger); text-decoration: underline; font-weight: 900; }
+
+        .translation { font-weight: normal; color: #777; font-size: 0.85rem; display: block; }
+
+        /* Estilos del Feedback Visual */
+        .feedback-mark {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-left: 10px;
+            display: none; /* Oculto por defecto */
+        }
+
+        .correct { color: var(--success); }
+        .incorrect { color: var(--danger); }
+
+        /* Contenedor de botones amigable */
+        .options { 
+            display: flex; 
+            justify-content: space-between;
+            background: #fdfdfd;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .options label { 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            font-size: 0.75rem; 
+            gap: 5px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        input[type="radio"] { 
+            width: 22px; 
+            height: 22px; 
+            margin: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Герои и Род (Géneros)</h1>
+    
+    <div class="instructions">
+        Pulsa el género correcto según la letra <span class="red">roja</span>. <br>
+        Recibirás feedback instantáneo: ✓ o X.
+    </div>
+
+    <div id="quiz">
+        </div>
+
+</div>
+
+<script>
+    const data = [
+        { word: "Сто<span class='red'>л</span>", icon: "🪑", gender: "m", trans: "Mesa" },
+        { word: "Школ<span class='red'>а</span>", icon: "🏫", gender: "f", trans: "Escuela" },
+        { word: "Окн<span class='red'>о</span>", icon: "🪟", gender: "n", trans: "Ventana" },
+        { word: "Дру<span class='red'>г</span>", icon: "👤", gender: "m", trans: "Amigo" },
+        { word: "Книг<span class='red'>а</span>", icon: "📖", gender: "f", trans: "Libro" },
+        { word: "Молок<span class='red'>о</span>", icon: "🥛", gender: "n", trans: "Leche" },
+        { word: "Бра<span class='red'>т</span>", icon: "👦", gender: "m", trans: "Hermano" },
+        { word: "Сестр<span class='red'>а</span>", icon: "👧", gender: "f", trans: "Hermana" },
+        { word: "Море<span class='red'>е</span>", icon: "🌊", gender: "n", trans: "Mar" },
+        { word: "Хле<span class='red'>б</span>", icon: "🍞", gender: "m", trans: "Pan" },
+        { word: "Вод<span class='red'>а</span>", icon: "💧", gender: "f", trans: "Agua" },
+        { word: "Письм<span class='red'>о</span>", icon: "✉️", gender: "n", trans: "Carta" },
+        { word: "Ко<span class='red'>т</span>", icon: "🐈", gender: "m", trans: "Gato" },
+        { word: "Дерев<span class='red'>о</span>", icon: "🌳", gender: "n", trans: "Árbol" },
+        { word: "Газет<span class='red'>а</span>", icon: "📰", gender: "f", trans: "Periódico" },
+        { word: "Журна<span class='red'>л</span>", icon: "📚", gender: "m", trans: "Revista" },
+        { word: "Плать<span class='red'>е</span>", icon: "👗", gender: "n", trans: "Vestido" },
+        { word: "Рыб<span class='red'>а</span>", icon: "🐟", gender: "f", trans: "Pez" },
+        { word: "Солнц<span class='red'>е</span>", icon: "☀️", gender: "n", trans: "Sol" },
+        { word: "Пап<span class='red'>а</span>", icon: "👨", gender: "m", trans: "Papá (¡Masc!)" }
+    ];
+
+    const container = document.getElementById('quiz');
+    data.forEach((item, i) => {
+        container.innerHTML += `
+            <div class="item">
+                <div class="header-item">
+                    <div class="left-content">
+                        <span class="num">${i+1}</span>
+                        <span class="icon">${item.icon}</span>
+                        <div class="word-box">
+                            ${item.word}
+                            <span class="translation">${item.trans}</span>
+                        </div>
+                    </div>
+                    <span id="mark${i}" class="feedback-mark"></span>
+                </div>
+                <div class="options">
+                    <label><input type="radio" name="q${i}" value="m" onclick="giveFeedback(${i}, 'm', '${item.gender}')"> MASC</label>
+                    <label><input type="radio" name="q${i}" value="f" onclick="giveFeedback(${i}, 'f', '${item.gender}')"> FEM</label>
+                    <label><input type="radio" name="q${i}" value="n" onclick="giveFeedback(${i}, 'n', '${item.gender}')"> NEUT</label>
+                </div>
+            </div>
+        `;
+    });
+
+    function giveFeedback(index, selectedValue, correctValue) {
+        const markElement = document.getElementById(`mark${index}`);
+        markElement.style.display = "inline"; // Mostrar la marca
+
+        if (selectedValue === correctValue) {
+            markElement.innerText = "✓";
+            markElement.className = "feedback-mark correct";
+        } else {
+            markElement.innerText = "X";
+            markElement.className = "feedback-mark incorrect";
+        }
+
+        // Desactivar las opciones para esta pregunta una vez respondida
+        const optionsInThisItem = document.getElementsByName(`q${index}`);
+        optionsInThisItem.forEach(option => option.disabled = true);
+    }
+</script>
+
+</body>
+</html>
