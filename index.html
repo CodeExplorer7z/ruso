@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruso: Géneros con Audio</title>
     <style>
         :root { --p: #3498db; --s: #2ecc71; --d: #e74c3c; --bg: #f4f7f6; }
@@ -16,28 +16,25 @@
         .word { font-size: 1.2rem; font-weight: bold; }
         .red { color: var(--d); text-decoration: underline; }
         .trans { font-weight: normal; font-size: 0.8rem; color: #888; display: block; }
-        .btn-audio { background: #eee; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-audio:active { background: var(--p); color: white; }
+        .btn-audio { background: #eee; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
         .btns { display: flex; gap: 8px; }
         button.choice { flex: 1; padding: 10px 2px; border: 1px solid #ddd; border-radius: 8px; background: white; font-weight: bold; font-size: 0.75rem; cursor: pointer; }
         .correct { background: var(--s) !important; color: white; border-color: var(--s); }
         .wrong { background: var(--d) !important; color: white; border-color: var(--d); }
-        .mark { font-size: 1.5rem; font-weight: bold; }
-        #next-btn { width: 100%; margin-top: 20px; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
+        #next-btn { width: 100%; margin-top: 20px; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1 id="page-title">Уроки русского</h1>
+    <h1 id="page-title">Cargando...</h1>
     <p class="instr">Escucha y elige el género (m, f, n)</p>
-    
     <div id="quiz"></div>
-    
-    <button id="next-btn" onclick="nextPage()">SIGUIENTE PÁGINA</button>
+    <button id="next-btn">SIGUIENTE PÁGINA</button>
 </div>
 
 <script>
+    // Todo el JavaScript va aquí dentro
     const allVocab = [
         {w:"Стол", i:"🪑", g:"m", t:"Mesa", r:"л"},
         {w:"Школа", i:"🏫", g:"f", t:"Escuela", r:"а"},
@@ -74,78 +71,78 @@
     let currentPage = 0;
     const itemsPerPage = 10;
 
-    // Función para hablar en Ruso
     function speak(text) {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = text;
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'ru-RU';
-        msg.rate = 0.8; // Un poco más lento para principiantes
+        msg.rate = 0.8;
         window.speechSynthesis.speak(msg);
+    }
+
+    function val(idx, sel, corr) {
+        const mark = document.getElementById('m' + idx);
+        const btnContainer = document.getElementById('b' + idx);
+        const btns = btnContainer.querySelectorAll('button');
+        
+        btns.forEach(b => {
+            b.disabled = true;
+            const genderAttr = b.getAttribute('data-g');
+            if (genderAttr === corr) b.classList.add('correct');
+            if (genderAttr === sel && sel !== corr) b.classList.add('wrong');
+        });
+        
+        mark.innerHTML = (sel === corr) ? "✅" : "❌";
+        speak(allVocab[idx].w);
     }
 
     function renderPage() {
         const container = document.getElementById('quiz');
-        const nextBtn = document.getElementById('next-btn');
         const title = document.getElementById('page-title');
+        const nextBtn = document.getElementById('next-btn');
         
         container.innerHTML = '';
-        window.scrollTo(0,0);
-        
         title.innerText = `Lección Rusa - Parte ${currentPage + 1}`;
+        
         const start = currentPage * itemsPerPage;
         const pageItems = allVocab.slice(start, start + itemsPerPage);
 
         pageItems.forEach((item, i) => {
             const globalIdx = start + i;
-            // Resaltar la última letra en rojo para la lógica visual
             const displayedWord = item.w.replace(new RegExp(item.r + "$"), `<span class="red">${item.r}</span>`);
             
-            container.innerHTML += `
-                <div class="item">
-                    <div class="item-head">
-                        <div class="word-box">
-                            <button class="btn-audio" onclick="speak('${item.w}')">🔊</button>
-                            <div class="word">${item.i} ${displayedWord} <span class="trans">(${item.t})</span></div>
-                        </div>
-                        <span id="m${globalIdx}" class="mark"></span>
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = `
+                <div class="item-head">
+                    <div class="word-box">
+                        <button class="btn-audio" onclick="speak('${item.w}')">🔊</button>
+                        <div class="word">${item.i} ${displayedWord} <span class="trans">(${item.t})</span></div>
                     </div>
-                    <div class="btns" id="b${globalIdx}">
-                        <button class="choice" onclick="val(${globalIdx},'m','${item.g}')">MASC</button>
-                        <button class="choice" onclick="val(${globalIdx},'f','${item.g}')">FEM</button>
-                        <button class="choice" onclick="val(${globalIdx},'n','${item.g}')">NEUT</button>
-                    </div>
-                </div>`;
+                    <span id="m${globalIdx}" class="mark"></span>
+                </div>
+                <div class="btns" id="b${globalIdx}">
+                    <button class="choice" data-g="m" onclick="val(${globalIdx},'m','${item.g}')">MASC</button>
+                    <button class="choice" data-g="f" onclick="val(${globalIdx},'f','${item.g}')">FEM</button>
+                    <button class="choice" data-g="n" onclick="val(${globalIdx},'n','${item.g}')">NEUT</button>
+                </div>
+            `;
+            container.appendChild(div);
         });
 
-        if (currentPage < 2) {
-            nextBtn.innerText = "SIGUIENTE PÁGINA";
-        } else {
-            nextBtn.innerText = "¡TERMINAR REPASO!";
-            nextBtn.onclick = () => alert("¡Felicidades! Completaste el vocabulario.");
-        }
+        nextBtn.innerText = (currentPage < 2) ? "SIGUIENTE PÁGINA" : "¡TERMINAR!";
+        nextBtn.onclick = () => {
+            if (currentPage < 2) {
+                currentPage++;
+                renderPage();
+                window.scrollTo(0,0);
+            } else {
+                alert("¡Felicidades!");
+            }
+        };
     }
 
-    function val(idx, sel, corr) {
-        const mark = document.getElementById('m'+idx);
-        const btns = document.getElementById('b'+idx).querySelectorAll('button');
-        btns.forEach(b => {
-            b.disabled = true;
-            if(b.innerText.toLowerCase().startsWith(corr)) b.classList.add('correct');
-            if(b.innerText.toLowerCase().startsWith(sel) && sel !== corr) b.classList.add('wrong');
-        });
-        mark.innerHTML = (sel === corr) ? "<span style='color:var(--s)'>✓</span>" : "<span style='color:var(--d)'>✕</span>";
-        // Opcional: Hablar la palabra al responder
-        speak(allVocab[idx].w);
-    }
-
-    function nextPage() {
-        if (currentPage < 2) {
-            currentPage++;
-            renderPage();
-        }
-    }
-
-    renderPage();
+    // Esto asegura que el código corra solo cuando el HTML esté listo
+    window.onload = renderPage;
 </script>
 
 </body>
